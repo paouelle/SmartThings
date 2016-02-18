@@ -126,10 +126,10 @@ metadata {
 		valueTile("firmwareVer", "device.firmwareVer", width: 2, height: 1, decoration: "flat", wordWrap: true) {
 			state "default", label: 'Firmware:\nv${currentValue}'
 		}
-	        valueTile("autoAway", "device.autoAway", width: 2, height: 1, decoration: "flat", wordWrap: true) {
+	  valueTile("autoAway", "device.autoAway", width: 2, height: 1, decoration: "flat", wordWrap: true) {
 			state "default", label: '${currentValue}'
 		}
-	        valueTile("airFilter", "device.airFilter", width: 2, height: 1, decoration: "flat", wordWrap: true) {
+	  valueTile("airFilter", "device.airFilter", width: 2, height: 1, decoration: "flat", wordWrap: true) {
 			state "default", label: '${currentValue}'
 		}
 		standardTile("leafValue", "device.leafValue", width: 1, height: 1) {
@@ -152,7 +152,7 @@ metadata {
 
 		main(["temperature"])
 
-		details(["temperature", "thermostatMode", "nestPresence", "thermostatFanMode", "autoAway", "airFilter", "firmwareVer", "refresh"])
+		details(["temperature", "thermostatMode", "nestPresence", "thermostatFanMode", "autoAway", "airFilter", "rssiTitle", "leafValue", "firmwareVer", "refresh"])
 
 		// really old  details(["temperature", "thermostatMode", "nestPresence", "thermostatFanMode", "temperatureUnit", "refresh"])
 	}
