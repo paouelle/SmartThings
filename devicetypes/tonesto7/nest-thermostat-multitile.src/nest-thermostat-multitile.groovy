@@ -75,7 +75,7 @@ metadata {
 	simulator {
 		// TODO: define status and reply messages here
 	}
-    
+
 	tiles(scale: 2) {
 		multiAttributeTile(name:"temperature", type:"thermostat", width:6, height:4) {
   			tileAttribute("device.temperature", key: "PRIMARY_CONTROL") {
@@ -143,13 +143,13 @@ metadata {
 			state "four", label: 'WiFi', icon: "https://dl.dropboxusercontent.com/s/oa14yhjkelpbx7p/signal_wifi_statusbar4.png"
 			state "five", label: 'WiFi', icon: "https://dl.dropboxusercontent.com/s/6kuf1c25niuhxsj/signal_wifi_statusbar5.png"
 			state "none", label: 'WiFi', icon: "https://dl.dropboxusercontent.com/s/6oavdtrfxy1b706/signal_wifi_statusbar_null.png"
-				
+
 		}
 		/*standardTile("temperatureUnit", "device.temperatureUnit", width:2, height:2, canChangeIcon: false, decoration: "flat") {
 			state "fahrenheit",  label: "°F", icon: "st.alarm.temperature.normal", action:"setCelsius"
 			state "celsius", label: "°C", icon: "st.alarm.temperature.normal", action:"setFahrenheit"
 		}*/
-        
+
 		main(["temperature"])
 
 		details(["temperature", "thermostatMode", "nestPresence", "thermostatFanMode", "autoAway", "airFilter", "firmwareVer", "refresh"])
@@ -165,7 +165,7 @@ def updated() {
         data.auth = null
 }
 
-	
+
 // parse events into attributes
 def parse(String description) {
 
@@ -175,7 +175,7 @@ def setTemperature(value) {
 	def operMode = device.currentValue("thermostatMode")
 	def curTemp = device.currentValue("temperature").toInteger()
 	def newCTemp
-	def newHTemp 
+	def newHTemp
 	switch (operMode) {
     	case "heat":
         	(value < curTemp) ? (newHTemp = getHeatTemp().toInteger() - 1) : (newHTemp = getHeatTemp().toInteger() + 1)
@@ -196,13 +196,13 @@ def setTemperature(value) {
     }
 }
 
-def getHeatTemp() { 
-	try { return device.latestValue("heatingSetpoint") } 
+def getHeatTemp() {
+	try { return device.latestValue("heatingSetpoint") }
 	catch (e) { return 0 }
 }
 
-def getCoolTemp() { 
-	try { return device.latestValue("coolingSetpoint") } 
+def getCoolTemp() {
+	try { return device.latestValue("coolingSetpoint") }
 	catch (e) { return 0 }
 }
 
@@ -440,7 +440,7 @@ def setDeviceLabel(value) {
 
 def setFirmwareVer(value) {
 	def firmVer = data?.device?.current_version ?: "unknown"
-	sendEvent(name: 'firmwareVer', value: firmVer)	
+	sendEvent(name: 'firmwareVer', value: firmVer)
 }
 
 def setFilterStatus(hasFilter,filterReminder,filterStatus) {
@@ -453,7 +453,7 @@ def setFilterStatus(hasFilter,filterReminder,filterStatus) {
 }
 
 def setAutoAwayStatus(enabled, learning, status) {
-	def value 
+	def value
 	def aaActive = (status == 1) ? "On" : "Off"
 	if(enabled) { value = "${aaActive} (${learning})" }
 	else { value = "Disabled" }
@@ -463,13 +463,13 @@ def setAutoAwayStatus(enabled, learning, status) {
 
 def setLeafStatus(leaf) {
 	def val = leaf.toBoolean() ? "on" : "off"
-	//log.info "Nest Leaf: ${val}" 
+	//log.info "Nest Leaf: ${val}"
 	sendEvent(name: 'leafValue', value: '${val}' )
 }
 
 def setTempUnit(unit) {
 	def cur = device.latestValue("temperatureUnit")
-	def value = (unit = "F") ? "fahrenheit" : "celsius"	
+	def value = (unit = "F") ? "fahrenheit" : "celsius"
 	if (!cur || (value != cur)) {
 		log.info "Temperature Unit: ${value}"
 		sendEvent(name: "temperatureUnit", value: value)
@@ -515,7 +515,7 @@ def poll() {
 
 		data.device.fan_mode = data.device.fan_mode == 'duty-cycle'? 'circulate' : data.device.fan_mode
 		data.structure.away = data.structure.away ? 'away' : 'present'
-		
+
 		setTempUnit(data?.temperature_scale?.toString())
 		setFirmwareVer(data?.device?.current_version)
 		setFilterStatus(data?.device?.has_air_filter.toBoolean(), data?.device?.filter_reminder_enabled, null)
@@ -526,7 +526,7 @@ def poll() {
 		def humidity = data?.device?.current_humidity
 		def temperatureType = data?.shared?.target_temperature_type
 		def fanMode = data?.device?.fan_mode
-		
+
 		def heatingSetpoint = '--'
 		def coolingSetpoint = '--'
 
@@ -535,8 +535,8 @@ def poll() {
 		sendEvent(name: 'humidity', value: humidity)
 		sendEvent(name: 'thermostatFanMode', value: fanMode)
 		sendEvent(name: 'thermostatMode', value: temperatureType)
-		
-        
+
+
 		def temperatureUnit = device.latestValue('temperatureUnit')
 		switch (temperatureUnit) {
 			case "celsius":
@@ -635,7 +635,12 @@ def api(method, args = [], success = {}) {
 	def request = methods.getAt(method)
 
 	log.debug "Logged in"
-	doRequest(request.uri, args, request.type, success)
+  try {
+	  doRequest(request.uri, args, request.type, success)
+  } catch (Throwable t) {
+    log.debug "Failure - re-login: $t"
+    login(method, args, success)
+  }
 }
 
 // Need to be logged in before this is called. So don't call this. Call api.
@@ -667,15 +672,15 @@ def doRequest(uri, args, type, success) {
 		}
 	}
 
-	try {
+	//try {
 		if (type == 'post') {
 			httpPostJson(params, postRequest)
 		} else if (type == 'get') {
 			httpGet(params, postRequest)
 		}
-	} catch (Throwable e) {
-		login()
-	}
+	//} catch (Throwable e) {
+	//	login()
+	//}
 }
 
 def login(method = null, args = [], success = {}) {
